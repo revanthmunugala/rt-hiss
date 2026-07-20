@@ -55,6 +55,11 @@ if(DEFINED NUM_CALCULATIONS_PER_THREAD_OPT)
     set(NUM_CALCULATIONS_PER_THREAD_OPT ${NUM_CALCULATIONS_PER_THREAD_OPT})
 endif()
 
+# RT-HiSS has no viewer, so GLFW's windowing backends are not needed.
+# Disabling them avoids requiring X11/Wayland development headers to build OWL.
+set(GLFW_BUILD_WAYLAND OFF)
+set(GLFW_BUILD_X11 OFF)
+
 # Using OWL as submodule
 set(owl_dir ${PROJECT_SOURCE_DIR}/OWL)
 add_subdirectory(${owl_dir} EXCLUDE_FROM_ALL)
