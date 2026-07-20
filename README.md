@@ -7,7 +7,7 @@
 - OptiX SDK compatible with OWL (download from https://developer.nvidia.com/designworks/optix/downloads/legacy)
 - C++17 compiler with OpenMP support
 
-Tested on: Quadro RTX 5000 and RTX 6000 with OptiX 7.4 and 7.7.
+Tested on: Quadro RTX 5000 and Quadro RTX 6000 with OptiX 7.4 and 7.7.
 
 ## Quickstart
 ### Setup
@@ -50,7 +50,23 @@ Example:
 
 A sample dataset is available in `sampleDataset/`.
 
-The datasets used in SC'26 are available at https://rcdata.nau.edu/gowanlock_lab/datasets/RT-HiSS_datasets/.
+### Fetching the SC'26 datasets
+The datasets used in SC'26 are stored in this repository with [Git LFS](https://git-lfs.com/) (Large File Storage). Git only clones a small pointer file for `scDatasets.tar.gz`, so you need Git LFS installed to download the actual contents:
+
+```bash
+sudo apt install git-lfs   
+git lfs install           
+git lfs pull              
+```
+
+Unpack the archive with:
+```bash
+tar -xvzf scDatasets.tar.gz
+```
+Alternatively, you can download the datasets directly from https://rcdata.nau.edu/gowanlock_lab/datasets/RT-HiSS_datasets.
+
+
+The scripts in `experiments/` can be used to reproduce the results reported in the paper.
 
 ## Tunable parameters
 
@@ -63,12 +79,12 @@ The datasets used in SC'26 are available at https://rcdata.nau.edu/gowanlock_lab
   - `random` — random dimension order
 
 ### CMake cache variables (set with `-D`)
-- `DIM` (default 18): Number of dimensions in the dataset
+- `DIM` : Number of dimensions in the dataset
 - `MAX_KD_LEVELS_OPT` (default -1 = auto, floor(ln(|D|))): kd-tree height limit; affects the number of primitives in the OptiX scene
 - `THREADS_TO_COPY_OPT` (default 8): Number of CPU threads for result copy
 - `PINNED_MEMORY_SIZE_OPT` (default 16\*1024\*1024): Allocated pinned buffer size in bytes shared among all CPU threads
 - `NUM_CALCULATIONS_PER_THREAD_OPT` (default 128): Number of point comparisons processed per thread
-- `SAFE_SHARED_MEMORY` (default: auto-detected): Usable shared memory per block in bytes. If unset, it is detected at runtime as the device maximum minus 0.625 KiB (640 bytes) of headroom; set it to pin a fixed value for your GPU
+- `SAFE_SHARED_MEMORY` (default: auto-detected): Usable shared memory per block in bytes. If unset, it is detected at runtime.
 
 ### CMake options for point comparison variants
 These options select where primitive and query points are loaded from (shared vs. global memory). The default loads both from shared memory.
@@ -112,7 +128,7 @@ cmake --build build -j
 ## IMPORTANT Notes
 The algorithm relies on GPU shared memory (L1) for performance. Available shared memory depends on GPU architecture. By default `SAFE_SHARED_MEMORY` is detected automatically at runtime. To use a fixed value instead, override it at build time with `-DSAFE_SHARED_MEMORY=<bytes>` (for example `-DSAFE_SHARED_MEMORY=48768` for a Quadro RTX 5000 with 48 KiB of shared memory).
 
-A good value for `MAX_KD_LEVELS_OPT` depends on dataset cardinality. We observe that floor(ln(|D|)) performs well, where |D| is the number of points. Tune per dataset for best results. This parameter has a significant impact on the results.
+A good value for `MAX_KD_LEVELS_OPT` depends on dataset cardinality. We observe that floor(ln(|D|)) performs well, where |D| is the number of points in the dataset. This parameter has a significant impact on the results.
 
 ## Output
 Results are appended to a `results.txt` file. Update the path if you want a different output location.
